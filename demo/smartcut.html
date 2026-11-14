@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>القطع الذكي للسكتات — عرض</title>
+<link rel="stylesheet" href="step-window.css">
+<style>
+:root { --hd-font: Cairo, Inter, system-ui, sans-serif; }
+body { margin: 0; background: #0e0f11; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.frame { width: min(980px, 100%); }
+/* stage: the plugin's panel and a Premiere-style timeline, drawn at 1200 x 750 */
+.sc-top { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: #1b1c20; border-bottom: 1px solid #0c0d0f; display: flex; align-items: center; padding: 0 16px; font: 600 13px Cairo, sans-serif; color: #9aa0a9; }
+.sc-prev { position: absolute; left: 20px; top: 62px; width: 600px; height: 340px; border-radius: 10px; background: linear-gradient(160deg, #3b4a63, #1d2330 60%, #15181f); overflow: hidden; }
+.sc-prev::after { content: ""; position: absolute; left: 50%; top: 52%; width: 150px; height: 150px; margin: -75px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #f3c7a3, #c98b64 60%, transparent 62%); opacity: .55; }
+.sc-tc { position: absolute; left: 20px; top: 414px; font: 700 22px Inter, sans-serif; color: #fff; direction: ltr; }
+.sc-tl { position: absolute; left: 20px; right: 420px; top: 470px; bottom: 26px; background: #141519; border-radius: 10px; border: 1px solid #22242a; overflow: hidden; }
+.sc-ruler { position: absolute; left: 96px; right: 14px; top: 0; height: 26px; border-bottom: 1px solid #22242a; }
+.sc-lbl { position: absolute; left: 10px; font: 700 11px Inter, sans-serif; color: #7b8089; }
+.sc-clip { position: absolute; left: 96px; top: 40px; height: 70px; border-radius: 6px; background: linear-gradient(#4a5a78, #34415a); border: 2px solid transparent; transition: none; }
+.sc-clip.sel { border-color: #ffd400; }
+.sc-clip span { position: absolute; left: 10px; top: 6px; font: 600 11px Inter, sans-serif; color: #e8ecf3; direction: ltr; }
+.sc-wave { position: absolute; left: 96px; top: 150px; height: 120px; width: 0; }
+.sc-bar { position: absolute; bottom: 0; width: 3px; border-radius: 2px; background: #5ec8a5; }
+.sc-silence { position: absolute; top: 0; height: 120px; background: rgba(230,57,70,.25); border-left: 2px solid #e63946; border-right: 2px solid #e63946; border-radius: 4px; display: none; }
+.sc-hint { position: absolute; left: 96px; top: 300px; font: 600 12px Cairo, sans-serif; color: #e63946; }
+.sc-panel { position: absolute; left: 820px; top: 62px; width: 360px; height: 640px; border-radius: 12px; background: #17181c; border: 1px solid #25272e; padding: 22px; }
+.sc-h { font: 900 22px Cairo, sans-serif; color: #fff; margin: 0 0 6px; }
+.sc-d { font: 500 13px Cairo, sans-serif; color: #8a8e96; line-height: 1.6; margin: 0 0 22px; }
+.sc-lab { font: 700 12px Cairo, sans-serif; color: #b9bdc5; margin: 0 0 8px; }
+.sc-track { height: 6px; border-radius: 6px; background: #2a2d35; position: relative; margin-bottom: 22px; }
+.sc-track i { position: absolute; left: 0; top: 0; bottom: 0; width: 60%; border-radius: 6px; background: #e63946; }
+.sc-btn { display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 12px; background: linear-gradient(180deg, #ee4452, #c81d2b); color: #fff; font: 800 15px Cairo, sans-serif; box-shadow: 0 10px 26px rgba(230,57,70,.35); position: relative; }
+.sc-btn.done { background: #2a2d35; color: #4fc488; box-shadow: none; }
+.sc-res { margin-top: 22px; padding: 16px; border-radius: 12px; background: #1e2026; border: 1px solid #2a2d35; }
+.sc-res b { display: block; font: 900 30px Inter, sans-serif; color: #4fc488; direction: ltr; text-align: right; }
+.sc-res span { font: 600 13px Cairo, sans-serif; color: #9aa0a9; }
+.sc-tot { position: absolute; left: 96px; top: 14px; font: 700 12px Inter, sans-serif; color: #c9ced6; direction: ltr; }
+</style>
+</head>
+<body>
+<div class="frame" id="demo"></div>
+<script src="step-window.js"></script>
+<script>
+(function () {
+  var H = HTMLDemo, ease = H.ease, cue = H.cue, glide = H.glide, held = H.held;
+  var TL_X = 96, TL_W = 1200 - 96 - 14 - 370 - 20 - 20;     // timeline width on stage
+  var PX = 11.2;                                            // px per second of source
+  var SRC = 60;                                              // source length in seconds
+  var CUTS = [[4, 9], [15, 17.5], [27, 33], [41, 46], [52, 55]];
+  var REMOVED = CUTS.reduce(function (s, c) { return s + (c[1] - c[0]); }, 0);
+
+  /* deterministic waveform: a bar every 0.25 s; silent where a cut is */
+  function rnd(i) { var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+  function inCut(sec) { for (var k = 0; k < CUTS.length; k++) if (sec >= CUTS[k][0] && sec < CUTS[k][1]) return true; return false; }
+  var BARS = [];
+  for (var i = 0; i < SRC * 4; i++) {
+    var sec = i / 4, silent = inCut(sec), h = silent ? 3 + rnd(i) * 4 : 18 + rnd(i) * 70;
+    BARS.push({ sec: sec, h: h });
+  }
+  /* seconds removed before a source time (for shifting bars and the clip) */
+  function removedBefore(sec) {
+    var r = 0; CUTS.forEach(function (c) { if (sec > c[1]) r += c[1] - c[0]; else if (sec > c[0]) r += sec - c[0]; }); return r;
+  }
+  var ARTIST = '';
+
+  var html = '' +
+    '<div class="sc-top">FilmKit Pro · Premiere Pro</div>' +
+    '<div class="sc-prev"></div>' +
+    '<div class="sc-tc" id="tc">00:00:00:00</div>' +
+    '<div class="sc-tl">' +
+      '<div class="sc-ruler"></div>' +
+      '<span class="sc-lbl" style="top:40px">V1</span>' +
+      '<span class="sc-lbl" style="top:150px">A1</span>' +
+      '<div class="sc-clip" id="clip"><span>interview_01.mov</span></div>' +
+      '<div class="sc-wave" id="wave"></div>' +
+      '<div class="sc-hint" id="hint"></div>' +
+      '<div class="sc-tot" id="tot">01:00</div>' +
+    '</div>' +
+    '<div class="sc-panel">' +
+      '<h3 class="sc-h">القطع الذكي للسكتات</h3>' +
+      '<p class="sc-d">يحذف فترات الصمت من الكليب المحدد</p>' +
+      '<p class="sc-lab">الحد الأدنى للسكتة</p>' +
+      '<div class="sc-track"><i></i></div>' +
+      '<div class="sc-btn" id="btn">قطع السكتات</div>' +
+      '<div class="sc-res" id="res" style="opacity:0"><span>الوقت اللي اتوفّر</span><b id="saved">0.0 s</b><span id="resNote"></span></div>' +
+    '</div>';
+
+  /* wave bars and silence boxes built once; positions set from t */
+  var WAVE_HTML = BARS.map(function (b, i) { return '<div class="sc-bar" data-i="' + i + '" style="left:' + (b.sec * PX) + 'px;height:' + b.h + 'px"></div>'; }).join('') +
+    CUTS.map(function (c, k) { return '<div class="sc-silence" data-k="' + k + '" style="left:' + (c[0] * PX) + 'px;width:' + ((c[1] - c[0]) * PX) + 'px"></div>'; }).join('');
+
+  var STEPS = [
+    { id: 'pick', name: 'اختار الكليب', dur: 4, html: html.replace('<div class="sc-wave" id="wave"></div>', '<div class="sc-wave" id="wave">' + WAVE_HTML + '</div>'),
+      draw: function (t, $) {
+        var sel = held(t, 1.6, 9) || t > 1.6;
+        $('#clip').classList.toggle('sel', sel);
+        var c = glide(t, [[0, 0, 900, 260], [0.4, 1.3, 330, 300]], [1.6]);
+        return { cursor: { x: c.x, y: c.y, press: c.press } };
+      } },
+    { id: 'analyze', name: 'تحليل الصوت', dur: 5, html: null,
+      draw: function (t, $) {
+        var btn = $('#btn'); btn.textContent = t < 2.6 && t >= 1.0 ? 'بيحلل…' : 'قطع السكتات';
+        var mark = ease(t, 2.6, 3.4);
+        $('#hint').textContent = t >= 3.6 ? '٥ سكتات لقيتها (' + REMOVED.toFixed(1) + ' ثانية)' : '';
+        document.querySelectorAll('.sc-silence').forEach(function (s) { s.style.display = mark > 0 ? 'block' : 'none'; s.style.opacity = mark; });
+        $('#tc').textContent = tc(Math.round(t * 3) * 0);
+        var c = glide(t, [[0, 0, 330, 300], [0.3, 1.0, 1080, 300]], [1.1]);
+        return { cursor: { x: c.x, y: c.y, press: c.press } };
+      } },
+    { id: 'cut', name: 'قطع', dur: 6, html: null,
+      draw: function (t, $) {
+        var p = ease(t, 0.4, 2.2);
+        var pressed = held(t, 0.5, 0.16);
+        $('#btn').textContent = t >= 2.4 ? 'تم القطع' : 'بيقطع…';
+        $('#btn').classList.toggle('done', t >= 2.4);
+        document.querySelectorAll('.sc-bar').forEach(function (el) {
+          var b = BARS[+el.dataset.i], sec = b.sec, shift = removedBefore(sec) * p;
+          var inside = inCut(sec);
+          el.style.left = (sec * PX - shift * PX) + 'px';
+          el.style.opacity = inside ? 1 - p : 1;
+        });
+        document.querySelectorAll('.sc-silence').forEach(function (s) { s.style.display = p < 1 ? 'block' : 'none'; s.style.opacity = 1 - p; });
+        var len = SRC - REMOVED * p;
+        $('#clip').style.width = (len * PX) + 'px';
+        $('#tot').textContent = tc2(len);
+        $('#tc').textContent = tc(0);
+        var c = glide(t, [[0, 0, 1080, 300]], []);
+        return { cursor: { x: c.x, y: c.y, press: pressed, hide: t > 3.4 } };
+      } },
+    { id: 'result', name: 'النتيجة', dur: 5, html: null,
+      draw: function (t, $) {
+        var r = ease(t, 0.2, 1.0);
+        $('#res').style.opacity = r;
+        $('#saved').textContent = (REMOVED * ease(t, 0.5, 1.4)).toFixed(1) + ' s';
+        $('#resNote').textContent = 'الفيديو بقى ' + (SRC - REMOVED).toFixed(1) + ' ثانية بعد ما كان ' + SRC + ' ثانية';
+        var p = 1;
+        document.querySelectorAll('.sc-bar').forEach(function (el) {
+          var b = BARS[+el.dataset.i], sec = b.sec, shift = removedBefore(sec) * p;
+          el.style.left = (sec * PX - shift * PX) + 'px'; el.style.opacity = inCut(sec) ? 0 : 1;
+        });
+        $('#clip').style.width = ((SRC - REMOVED) * PX) + 'px';
+        $('#btn').textContent = 'تم القطع'; $('#btn').classList.add('done');
+        $('#tot').textContent = tc2(SRC - REMOVED);
+        return {};
+      } }
+  ];
+  /* step 2 and later reuse the pick step's markup */
+  STEPS.forEach(function (s) { if (!s.html) s.html = STEPS[0].html; });
+
+  function tc(s) { return '00:00:00:00'; }
+  function tc2(sec) { var m = Math.floor(sec / 60), s = sec - m * 60; return String(m).padStart(2, '0') + ':' + s.toFixed(1).padStart(4, '0'); }
+
+  var demo = H.mount(document.getElementById('demo'), {
+    steps: STEPS, label: 'القطع الذكي للسكتات', stageClass: 'sc'
+  });
+  window.__demo = demo;
+})();
+</script>
+</body>
+</html>
