@@ -236,3 +236,16 @@ code{font-family:Inter,monospace;direction:ltr;display:inline-block;background:v
   .foot-in{flex-direction:column;text-align:center}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+/* polish: keyboard focus is always visible; hover effects only where a mouse can hover; presses feel physical */
+:focus-visible{outline:2px solid var(--acc2);outline-offset:3px;border-radius:8px}
+.btn:focus-visible,.tabs button:focus-visible,.chips button:focus-visible{outline-offset:4px}
+@media (hover:hover){
+  .btn:hover{transform:translateY(-1px)}
+  .card:hover{transform:translateY(-4px)}
+}
+@media (hover:none){
+  .card:hover,.price:hover{transform:none}
+}
+.tool:active{transform:scale(.985)}
+.chips button:active,.tabs button:active{transform:scale(.97)}
