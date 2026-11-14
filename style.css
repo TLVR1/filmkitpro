@@ -268,3 +268,7 @@ html{overflow-x:clip}
 .m-box{overflow-x:hidden}
 .m-body,.m-body p,.m-head>div,.m-head h3,.m-steps li{overflow-wrap:anywhere;min-width:0}
 .m-head{min-width:0}
+
+/* break test: long unbroken names on a tool card wrap inside the card */
+.tool{overflow:hidden;min-width:0}
+.tool h3,.tool p{overflow-wrap:anywhere;min-width:0}
