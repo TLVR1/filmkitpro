@@ -39,6 +39,7 @@ const T = [
  ["assistant","project","مساعد AI","اسأل عن المونتاج، وهيرد بمفتاح Gemini بتاعك","AI Assistant","Ask editing questions, answered with your own Gemini key"],
 ].map(r => ({id:r[0],g:r[1],ar:[r[2],r[3]],en:[r[4],r[5]]}));
 const NEW = new Set(["carousel3d","textpath","motionai","capsdict","sfxlib","repeats"]);
+const DEMOS = {smartcut:"demo/smartcut.html"};
 const CLIPS = {audioenhance:1,captions:1,carousel3d:1,smartcut:1,textpath:1,transitions:1};
 const G = {
  all:["الكل","All"],edit:["مونتاج","Editing"],captions:["كابشن ونصوص","Captions & Text"],audio:["صوت","Audio"],
@@ -146,7 +147,7 @@ function renderMarquee() {
 const modal = $("#modal");
 function openTool(id) {
   const t = T.find(x => x.id === id); if (!t) return;
-  $("#mMedia").innerHTML = CLIPS[id] ? `<video src="assets/clips/${id}.mp4" autoplay muted loop playsinline controls></video>` : `<div class="ph"><img src="assets/icons/${id}.png" alt=""></div>`;
+  $("#mMedia").innerHTML = DEMOS[id] ? `<iframe src="${DEMOS[id]}" title="${L(t.ar[0], t.en[0])}" style="width:100%;aspect-ratio:16/10;border:0;display:block;background:#0e0f11" loading="lazy" allowfullscreen></iframe>` : CLIPS[id] ? `<video src="assets/clips/${id}.mp4" autoplay muted loop playsinline controls></video>` : `<div class="ph"><img src="assets/icons/${id}.png" alt=""></div>`;
   $("#mIcon").src = `assets/icons/${id}.png`;
   $("#mGrp").textContent = L(...G[t.g]);
   $("#mTitle").textContent = L(t.ar[0], t.en[0]);
