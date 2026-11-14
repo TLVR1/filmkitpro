@@ -84,11 +84,11 @@ const FAQ = [
 const I = {
  "nav.new":"What's new","nav.tools":"Tools","nav.goal":"Find a tool","nav.install":"Install","nav.pricing":"Pricing","nav.faq":"FAQ","nav.dl":"Download",
  "hero.pill":"Runs inside Adobe Premiere Pro · Arabic & English","hero.h1a":"All your tools","hero.h1b":"in one place.",
- "hero.lead":"36 tools that speed up editing: auto captions in Arabic dialects, silence and repeat cutting, motion transitions, 3D carousel, audio cleanup, shorts maker… without leaving Premiere.",
+ "hero.lead":"47 tools that speed up editing: auto captions in Arabic dialects, silence and repeat cutting, motion transitions, 3D carousel, audio cleanup, shorts maker… without leaving Premiere.",
  "hero.win":"Download for Windows","hero.see":"See the tools","m.ver":"Version","m.ui":"Interface","m.trial":"7 days","m.trialS":"Free trial",
  "s.tools":"tools in one panel","s.styles":"AI image styles","s.luts":"free film LUTs","s.local":"runs on your machine","s.lang":"UI languages",
  "new.h":"What's new in this update","new.p":"The biggest update yet — new tools and a faster interface.",
- "tools.k":"Tools","tools.h":"36 tools — click any of them","tools.p":"Pick a category or search, then click a tool to see what it does and how to use it.","tools.none":"No tool matches that.",
+ "tools.k":"Tools","tools.h":"47 tools — click any of them","tools.p":"Pick a category or search, then click a tool to see what it does and how to use it.","tools.none":"No tool matches that.",
  "goal.k":"Not sure where to start?","goal.h":"Tell us what you want to do",
  "how.k":"Guide","how.h":"Every tool in 3 steps","how.1":"Pick the tool","how.1p":"From the panel inside Premiere, or search.","how.2":"Select the clip","how.2p":"On the timeline — the tool knows what to work on.","how.3":"Click Apply","how.3p":"The result lands on your sequence, and Ctrl+Z undoes it.",
  "ins.k":"Install","ins.h":"Ready in two minutes","ins.p":"No admin rights or extra software needed.","ins.1":"Download the file","ins.2":"Run the installer","ins.2p":"Click Next until Finish — keep Premiere closed.","ins.3":"Open the panel",
