@@ -263,3 +263,8 @@ html{overflow-x:clip}
   h1{font-size:2.3rem}
   .meta li{padding:7px 12px}
 }
+
+/* break test: long unbroken text in the tool popup must wrap, never push the box wider than the screen */
+.m-box{overflow-x:hidden}
+.m-body,.m-body p,.m-head>div,.m-head h3,.m-steps li{overflow-wrap:anywhere;min-width:0}
+.m-head{min-width:0}
