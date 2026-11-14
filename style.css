@@ -249,3 +249,17 @@ code{font-family:Inter,monospace;direction:ltr;display:inline-block;background:v
 }
 .tool:active{transform:scale(.985)}
 .chips button:active,.tabs button:active{transform:scale(.97)}
+
+/* break test at 340px: the page must not scroll sideways and the header must fit */
+html{overflow-x:clip}
+.hero,.marquee{overflow:hidden}
+@media (max-width:380px){
+  .nav-in{gap:8px}
+  .brand{font-size:1rem}
+  .brand img{width:28px;height:28px}
+  .lang{display:none}
+  .nav-act{gap:6px}
+  .wrap{padding-inline:16px}
+  h1{font-size:2.3rem}
+  .meta li{padding:7px 12px}
+}
