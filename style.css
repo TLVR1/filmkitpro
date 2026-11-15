@@ -272,3 +272,21 @@ html{overflow-x:clip}
 /* break test: long unbroken names on a tool card wrap inside the card */
 .tool{overflow:hidden;min-width:0}
 .tool h3,.tool p{overflow-wrap:anywhere;min-width:0}
+
+.was{margin:6px 0 0;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;color:var(--mut);font:700 1.1rem Inter}
+.was s{text-decoration:line-through;text-decoration-color:var(--acc);text-decoration-thickness:3px}
+.was .off{background:rgba(230,57,70,.18);color:#ff8f98;font:800 .8rem Inter,Cairo,sans-serif;padding:3px 10px;border-radius:99px;white-space:nowrap}
+@property --ang{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes fkang{to{--ang:360deg}}
+@keyframes fkshine{0%{transform:translateX(-130%) skewX(-20deg)}60%,100%{transform:translateX(260%) skewX(-20deg)}}
+@keyframes fkpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+.price.life{max-width:960px;margin:0 auto 26px;padding:40px 26px 30px;border:2px solid transparent;box-shadow:0 24px 70px rgba(230,57,70,.3);background:linear-gradient(180deg,rgba(230,57,70,.16),var(--s1) 65%) padding-box,linear-gradient(var(--s1),var(--s1)) padding-box,conic-gradient(from var(--ang),var(--acc),#ffb347,var(--acc),#7a1f28,var(--acc)) border-box;animation:fkang 5s linear infinite}
+.price.life:hover{transform:translateY(-4px) scale(1.01)}
+.price.life h3{font-size:1.6rem}
+.price.life .was{font-size:1.25rem}
+.price.life .off{animation:fkpulse 1.8s ease-in-out infinite;font-size:.95rem}
+.price.life .amt b{font-size:5rem}
+.price.life .per{margin-bottom:18px}
+.price.life .btn{max-width:380px;position:relative;overflow:hidden}
+.price.life .btn::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:fkshine 2.8s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.price.life,.price.life .off,.price.life .btn::after{animation:none}}
